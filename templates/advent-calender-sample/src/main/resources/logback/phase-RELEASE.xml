@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<included>
+	<include resource="logback/appender-file.xml" />
+
+	<logger name="jdbc.sqlonly" level="ERROR" />
+	<logger name="jdbc.resultsettable" level="ERROR" />
+	
+	<root level="WARN">
+		<appender-ref ref="file" />
+	</root>
+</included>

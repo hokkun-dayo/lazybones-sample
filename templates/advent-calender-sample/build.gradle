@@ -1,0 +1,105 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.13.0'
+    }
+}
+
+plugins {
+    id "com.moowork.node" version "0.13"
+}
+
+apply plugin: 'com.github.ben-manes.versions'
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'spring-boot'
+apply plugin: 'idea'
+apply plugin: 'groovy'
+apply plugin: 'com.moowork.node'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    // spring framework
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springBootVersion
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootVersion) {
+        exclude(module: 'commons-logging')
+    }
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springBootVersion
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: springBootVersion) {
+        exclude(module: 'groovy')
+    }
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: springBootVersion
+    compile group: 'org.springframework.boot', name: 'spring-boot-devtools', version: springBootVersion
+    compile group: 'org.springframework', name: 'spring-jdbc', version:'4.1.4.RELEASE'
+    compile group: 'org.springframework', name: 'spring-context-support', version:'4.1.4.RELEASE'
+
+    // for test
+    testCompile group: 'cglib', name: 'cglib-nodep', version: '3.2.4'
+    testCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.7'
+    testCompile(group: 'org.spockframework', name: 'spock-core', version: '1.0-groovy-2.4') {
+        exclude(module: 'groovy-all')
+    }
+    testCompile group: 'com.github.tomakehurst', name: 'wiremock', version: '2.1.7'
+    testCompile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.2.0'
+    testCompile group: 'com.jayway.jsonpath', name: 'json-path-assert', version: '2.2.0'
+    testCompile(group: 'org.spockframework', name: 'spock-spring', version: '1.0-groovy-2.4') {
+        exclude(module: 'groovy-all')
+    }
+
+    // other
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.3'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.8.3'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.8.3'
+    compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-afterburner', version: '2.8.3'
+    compile group: 'org.apache.tomcat', name: 'tomcat-jdbc', version:'8.0.15'
+    compile group: 'com.google.guava', name: 'guava', version:'19.0'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.4'
+    compile group: 'org.apache.commons', name: 'commons-collections4', version:'4.1'
+    compile group: 'org.apache.commons', name: 'commons-math3', version:'3.6.1'
+    compile group: 'commons-net', name: 'commons-net', version:'3.5'
+    compile group: 'org.apache.thrift', name: 'libthrift', version:'0.9.1'
+    compile(group: 'org.projectlombok', name: 'lombok', version:'1.16.8')
+}
+
+processResources {
+    filesMatching('**/*.yml') {
+        expand projectVersion: project.version, projectGroup: project.group, projectName: project.name
+    }
+}
+
+node {
+    version = '6.3.0'
+    distBaseUrl = 'https://nodejs.org/dist'
+    download = true
+    workDir = file("${project.buildDir}/static")
+    nodeModulesDir = file("${project.projectDir}/static")
+}
+
+task npmRunBuild(type: NpmTask, dependsOn: npmInstall) {
+    if (project.hasProperty('staticReleaseMode')) {
+        args = ['run', 'build:prod']
+    } else {
+        args = ['run', 'build']
+    }
+}
+
+task npmRunBuildWatch(type: NpmTask, dependsOn: npmInstall) {
+    args = ['run', 'build:watch']
+}
+
+task npmRunEslint(type: NpmTask, dependsOn: npmInstall) {
+    args = ['run', 'eslint']
+}
+
+processResources.dependsOn npmRunBuild

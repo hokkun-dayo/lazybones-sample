@@ -1,0 +1,10 @@
+#### SPRING BOOT SETTING ###
+server:
+  port: 0
+
+management:
+  port: 0
+
+#### MODULE SETTING ###
+application:
+  phase: TEST

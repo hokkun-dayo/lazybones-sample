@@ -1,0 +1,78 @@
+buildscript {
+    repositories {
+        maven {
+            url "http://dl.bintray.com/pledbrook/plugins"
+        }
+    }
+
+    dependencies {
+        classpath "uk.co.cacoethes:lazybones-gradle:1.2.4"
+    }
+}
+
+apply plugin: "uk.co.cacoethes.lazybones-templates"
+apply plugin:'java'
+
+// For editing groovy file in IDE
+dependencies {
+    compile group: 'commons-io', name: 'commons-io', version: '2.5'
+}
+
+repositories {
+    mavenCentral()
+    maven { url "http://repo.maven.apache.org/maven2" }
+}
+
+tasks.addRule("publishToNexus<TmplName> - Publishes the named template package to the configured Nexus repository") {
+    String taskName ->
+        def matcher = taskName =~ /publishToNexus([A-Z\-]\S+)/
+        if (matcher) {
+            def camelCaseName = matcher[0][1]
+
+            def pkgTask = (Zip) project.tasks.getByName("packageTemplate${camelCaseName}")
+            if (!pkgTask) {
+                return
+            }
+
+            tasks.create(taskName).with { t ->
+                dependsOn pkgTask
+
+                def url = "http://{YOUR_NEXUS_URL}/${pkgTask.archiveName}"
+                println "archivePath: ${pkgTask.archivePath}"
+                println "uploadUrl: ${url}"
+
+
+                doFirst {
+                    if (!pkgTask.archivePath.exists()) {
+                        throw new GradleException("Bad build file: zip archive '${pkgTask.archiveName}' does not exist," +
+                                                          " but should have been created automatically.")
+                    }
+                }
+
+                doLast {
+                    def conn = new URI(url).toURL().openConnection()
+                    conn.with {
+                        requestMethod = "PUT"
+
+                        doOutput = true
+                        def fileInputStream = pkgTask.archivePath.newInputStream()
+                        try {
+                            outputStream << fileInputStream
+                        } catch (Throwable ex) {
+                            throw ex
+                        } finally {
+                            fileInputStream.close()
+                            outputStream.close()
+                        }
+
+                        def status = responseCode
+                        if (!(status in 200..<300)) {
+                            throw new GradleException("Unexpected status ${status} from Nexus")
+                        }
+
+                    }
+
+                }
+            }
+        }
+}

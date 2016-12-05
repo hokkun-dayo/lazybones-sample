@@ -1,0 +1,16 @@
+#### DEFAULT PROFILE IS LOCAL ###
+# Spring boot loads application.yml and application-<profile>.yml
+spring.profiles.active: LOCAL
+
+#### SPRING BOOT SETTING ###
+management:
+  add-application-context-header: false
+
+#### MODULE SETTING ###
+application:
+  serviceCode: # this module name
+  basePath: # module base path
+  version: ${projectVersion}
+  groupId: ${projectGroup}
+  artifactId: ${projectName}
+

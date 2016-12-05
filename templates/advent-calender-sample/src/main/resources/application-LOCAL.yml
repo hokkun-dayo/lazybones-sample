@@ -1,0 +1,10 @@
+#### SPRING BOOT SETTING ###
+server:
+  port: 8080
+
+management:
+  port: 20080
+
+#### MODULE SETTING ###
+application:
+  phase: LOCAL

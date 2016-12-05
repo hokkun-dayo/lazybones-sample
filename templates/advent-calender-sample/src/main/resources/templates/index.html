@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ja" th:lang="#{language}">
+<head>
+  <meta charset="UTF-8"/>
+  <title>TestApp</title>
+</head>
+<body>
+<div>hello text from server: <span id="hello" th:text="${hello}"></span></div>
+<div>time text from server: <span id="time" th:text="${time}"></span></div>
+<div id="root"></div>
+<script type="application/javascript" th:inline="javascript">
+  var LOCALE = /*[[#{language}]]*/ [];
+</script>
+<script src="bundle.js"></script>
+</body>
+</html>
